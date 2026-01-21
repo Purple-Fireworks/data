@@ -1,2 +1,5 @@
-This is a test file\nTEST
-This is a test file\nTEST
+Welcome to Fireworks!
+This page is still a work in progress, so there may be bugs.
+\nThe AI and Movies & TV buttons currently redirect to example.com,
+\nbut those will be implemented in coming days.
+\nThanks for using Fireworks!
