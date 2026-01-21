@@ -1,20 +1,2 @@
 data:text/html;charset=utf-8,
-<!DOCTYPE html>
-<html>
-<body>
-    <script>
-        (function() {
-            let url = new URL(window.location).searchParams.get('url') || 'https://raw.githubusercontent.com/purple-fireworks/data/refs/heads/main/[version].html';
-            
-            fetch(url)
-            .then(r => r.text())
-            .then(html => {
-                const modifiedHtml = html.replace("const isPlusMode = true;", "const isPlusMode = [true/false];");
-                document.open();
-                document.write(modifiedHtml);
-                document.close();
-            });
-        })();
-    </script>
-</body>
-</html>
+<!DOCTYPE html><html><body><script>(function() {let url = new URL(window.location).searchParams.get('url') || 'https://raw.githubusercontent.com/purple-fireworks/data/refs/heads/main/[version].html';fetch(url).then(r => r.text()).then(html => {const modifiedHtml = html.replace("const isPlusMode = true;", "const isPlusMode = [true/false];");document.open();document.write(modifiedHtml);document.close();});})();</script></body></html>
