@@ -1,6 +1,3 @@
 Welcome to Fireworks!
 This page is still a work in progress, so there may be bugs.
-\n
-\nThe AI and Movies & TV buttons currently redirect to example.com,
-\nbut those will be implemented in coming days.
-\nThanks for using Fireworks!
+\nBut, don't worry, I'm working hard to fix them!
