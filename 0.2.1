@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fireworks</title>
+    <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/microsoft/fluentui-emoji/refs/heads/main/assets/Fireworks/3D/fireworks_3d.png">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: mediumpurple;
+            --primary-glow: rgba(147, 112, 219, 0.5);
+            --bg-dark: #0a0a0f;
+            --glass-bg: rgba(30, 30, 40, 0.15); 
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --text-main: #ffffff;
+            --text-sub: #b0b0b0;
+            --error: #ff5555;
+            --error-glow: rgba(255, 85, 85, 0.5);
+        }
+
+        body {
+            cursor: default;
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-dark);
+            background: radial-gradient(circle at center, #1a1025 0%, #000000 100%);
+            color: var(--text-main);
+            margin: 0;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        #cursor-glow {
+            position: fixed;
+            width: 120px; 
+            height: 120px;
+            background: radial-gradient(circle, rgba(147, 112, 219, 0.25) 0%, rgba(0,0,0,0) 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            margin-left: -60px; 
+            margin-top: -60px;
+            top: 0;
+            left: 0;
+            z-index: 5; 
+            mix-blend-mode: screen;
+            will-change: transform;
+            transform: translate3d(-500px, -500px, 0); 
+        }
+
+        #fireworks-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .ui-wrapper {
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 1600px; 
+            padding: 20px;
+            height: 100%;
+            overflow-y: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .ui-wrapper::-webkit-scrollbar {
+            display: none;
+        }
+
+        .title-container {
+            text-align: center;
+            margin-top: 40px;
+            margin-bottom: 30px;
+            text-shadow: 0 0 20px var(--primary-glow);
+        }
+
+        #main-title-text, #main-title-text-home, #main-title-text-login {
+            font-size: 4rem;
+            font-weight: 700;
+            letter-spacing: -1px;
+            background: linear-gradient(135deg, #fff 0%, var(--primary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: block;
+        }
+
+        .subtext-title {
+            font-size: 1rem;
+            color: var(--text-sub);
+            margin-top: 5px;
+            font-weight: 300;
+            letter-spacing: 0.5px;
+        }
+
+        .container {
+            background: var(--glass-bg);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid var(--glass-border);
+            padding: 30px;
+            border-radius: 24px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+
+        input[type="text"], input[type="password"] {
+            background: rgba(10, 10, 15, 0.6);
+            border: 1px solid var(--glass-border);
+            color: var(--text-main);
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 1rem;
+            width: 100%;
+            margin-bottom: 15px;
+            outline: none;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        input[type="text"]:focus, input[type="password"]:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 15px var(--primary-glow);
+            background: rgba(20, 20, 30, 0.8);
+        }
+
+        input::placeholder {
+            color: var(--primary);
+            font-size: 1.1rem;
+            opacity: 1;
+            font-weight: 600;
+        }
+
+        .login-error-msg {
+            color: var(--error);
+            font-size: 0.9rem;
+            margin-top: -5px;
+            margin-bottom: 10px;
+            display: none;
+            text-shadow: 0 0 10px var(--error-glow);
+        }
+
+        button {
+            background: rgba(147, 112, 219, 0.25); 
+            color: white;
+            border: 1px solid rgba(147, 112, 219, 0.5);
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            flex-grow: 1;
+            max-width: 300px;
+            z-index: 11;
+            will-change: transform; 
+        }
+
+        button:hover {
+            background: rgba(147, 112, 219, 0.8);
+            box-shadow: 0 0 30px var(--primary-glow);
+            transform: translateY(-3px);
+            color: #fff;
+            border-color: var(--primary);
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        button.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            filter: grayscale(1);
+        }
+
+        .plus-only {
+            display: none;
+        }
+
+        .footer {
+            margin-top: auto;
+            padding: 20px;
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.4);
+            text-align: center;
+            min-height: 1.2rem; 
+        }
+
+        #notification-container {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .notify-container {
+            background: var(--glass-bg);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid var(--glass-border);
+            padding: 20px 30px;
+            border-radius: 16px;
+            width: fit-content; 
+            max-width: 90%;
+            min-width: 300px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+            text-align: center;
+            color: var(--text-main);
+        }
+
+        .notify-heading {
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 1.2rem;
+            margin-bottom: 5px; 
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-shadow: 0 0 10px rgba(147, 112, 219, 0.3);
+        }
+
+        .notify-content {
+            line-height: 1.25; 
+            font-size: 0.95rem;
+            margin-top: 5px;
+        }
+
+        #game-frame {
+            display: none;
+            width: 100%;
+            height: 100%;
+            border: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background-color: black;
+            z-index: 9999;
+        }
+
+        .progress-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(10, 10, 15, 0.95);
+            backdrop-filter: blur(5px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            display: none;
+        }
+
+        .progress-container {
+            width: 200px;
+            height: 6px;
+            background-color: #333;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 0 20px var(--primary-glow);
+        }
+
+        .progress-bar {
+            background-color: var(--primary);
+            height: 100%;
+            width: 70px;
+            border-radius: 99px;
+            box-shadow: 0 0 10px var(--primary);
+            animation: moveProgressBar 1.5s infinite ease-in-out;
+            will-change: transform;
+        }
+
+        .loading-text {
+            margin-top: 15px;
+            color: var(--primary);
+            font-weight: 600;
+            letter-spacing: 2px;
+            will-change: opacity;
+        }
+
+        .status-message {
+            font-size: 1.3rem; 
+            font-weight: 700;
+            margin-bottom: 0px; 
+            padding-bottom: 0px; 
+        }
+        .status-detail {
+            color: var(--text-sub);
+            font-size: 0.9rem;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        @keyframes moveProgressBar {
+            0% { transform: translateX(-80px); }
+            100% { transform: translateX(210px); }
+        }
+    </style>
+</head>
+<body oncontextmenu="return false;"> 
+
+    <canvas id="fireworks-canvas"></canvas>
+    <div id="cursor-glow"></div>
+
+    <div id="update-screen" class="ui-wrapper">
+        <div class="title-container">
+            <span id="main-title-text" style="font-size: 3rem;">Fireworks</span>
+        </div>
+        <div class="container" style="flex-direction: column; align-items: center; max-width: 500px; text-align: center;">
+            <div id="status-content" style="display: flex; flex-direction: column; align-items: center; width: 100%;">
+                <div class="status-message" style="text-shadow: 0 0 15px var(--primary-glow);">Verifying connection...</div>
+                <div class="progress-container" style="margin: 20px 0;">
+                    <div class="progress-bar"></div>
+                </div>
+                <div class="status-detail">Please wait while we connect to the server.</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="login-screen" class="ui-wrapper" style="display: none;">
+        <div class="title-container">
+            <span id="main-title-text-login">Login</span>
+        </div>
+        <div class="container" style="flex-direction: column; align-items: center; max-width: 400px; text-align: center;">
+            <input type="text" id="username-input" placeholder="Username" autocomplete="off">
+            <input type="password" id="password-input" placeholder="Password" onkeydown="if(event.key==='Enter') attemptLogin()">
+            <div id="login-error" class="login-error-msg">Incorrect username or password.</div>
+            <button id="login-btn" onclick="attemptLogin()" style="width: 100%; margin-top: 0;">Login</button>
+        </div>
+        <div class="footer" id="login-footer"></div>
+    </div>
+
+    <div id="home-screen" class="ui-wrapper" style="display: none;">
+        <div class="title-container">
+            <span id="main-title-text-home">Fireworks</span>
+            <div class="subtext-title">
+                Totally educational stuff that shouldn't be blocked.
+            </div>
+        </div>
+
+        <div id="button-container" class="container">
+            <button onclick="showEaglercraftButtons()">Eaglercraft</button>
+            <button onclick="openRawHtml('https://raw.githubusercontent.com/12treesarecool34/flashemulator/refs/heads/main/index.html')">Flash Emulator</button>
+            <button onclick="openRawHtml('https://raw.githubusercontent.com/12treesarecool34/dino/refs/heads/main/index.html')">Chrome Dino</button>
+            <button class="plus-only" onclick="window.open('https://app.reka.ai/chat/', '_blank')">AI</button>
+            <button class="plus-only" onclick="window.open('https://hexa.su/', '_blank')">Movies & TV</button>
+            <button onclick="window.open('https://padlet.com/purple_fireworks/fireworks_chat', '_blank')">Chat</button>
+        </div>
+
+        <div id="eaglercraft-button-container" class="container" style="display: none;">
+            <button onclick="showMainMenu()" style="background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.3);">&larr; Back</button>
+            <button class="plus-only" onclick="openRawHtml('https://raw.githubusercontent.com/12treesarecool34/eaglercraft/refs/heads/main/1-12-2_WASM-GC.html')">1.12.2 WASM-GC</button>
+            <button class="plus-only" onclick="openRawHtml('https://raw.githubusercontent.com/12treesarecool34/eaglercraft/refs/heads/main/1-8-8_WASM-GC.html')">1.8.8 WASM-GC</button>
+            <button onclick="openRawHtml('https://raw.githubusercontent.com/12treesarecool34/eaglercraft/refs/heads/main/1-8-8.html')">1.8.8</button>
+            <button onclick="openRawHtml('https://raw.githubusercontent.com/12treesarecool34/eaglercraft/refs/heads/main/1-5-2.html')">1.5.2</button>
+            <button class="plus-only" onclick="openRawHtml('https://raw.githubusercontent.com/12treesarecool34/eaglercraft/refs/heads/main/beta_1-7-3.html')">Beta 1.7.3</button>
+            <button class="plus-only" onclick="openRawHtml('https://raw.githubusercontent.com/12treesarecool34/eaglercraft/refs/heads/main/beta_1-3.html')">Beta 1.3</button>
+            <button class="plus-only" onclick="openRawHtml('https://raw.githubusercontent.com/12treesarecool34/eaglercraft/refs/heads/main/alpha_1-2-6.html')">Alpha 1.2.6</button>
+            <button class="plus-only" onclick="openRawHtml('https://raw.githubusercontent.com/12treesarecool34/eaglercraft/refs/heads/main/indev.html')">Indev</button>
+        </div>
+
+        <div id="notification-container"></div>
+        <div class="footer" id="footer"></div>
+    </div>
+
+    <iframe id="game-frame"></iframe>
+
+    <div id="progress-overlay" class="progress-overlay">
+        <div class="progress-container">
+            <div class="progress-bar"></div>
+        </div>
+        <div class="loading-text">LOADING ASSETS</div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('fireworks-canvas');
+        const ctx = canvas.getContext('2d');
+        const cursorGlow = document.getElementById('cursor-glow');
+        
+        let mouseX = -100;
+        let mouseY = -100;
+        let mouseMoved = false;
+
+        document.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+            mouseMoved = true;
+        });
+
+        let width, height;
+        let particles = [];
+        let fireworks = [];
+        let animationId; 
+        let timerTotal = 80;
+        let timerTick = 0;
+
+        const PI2 = Math.PI * 2;
+        const NEG_PI_DIV_2 = -Math.PI / 2;
+
+        ctx.lineCap = 'round';
+        ctx.lineWidth = 2;
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            ctx.lineCap = 'round';
+            ctx.lineWidth = 2;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        function random(min, max) { return Math.random() * (max - min) + min; }
+
+        class Firework {
+            constructor() {
+                this.x = random(width * 0.1, width * 0.9);
+                this.y = height;
+                this.coordinateCount = 3;
+                this.coordinates = new Array(this.coordinateCount);
+                for(let i=0; i<this.coordinateCount; i++) {
+                    this.coordinates[i] = [this.x, this.y];
+                }
+                
+                const targetY = random(height * 0.1, height * 0.4);
+                const distance = height - targetY;
+                const gravity = 0.05; 
+                const speed = Math.sqrt(2 * gravity * distance);
+                const angle = NEG_PI_DIV_2 + random(-0.35, 0.35);
+                this.vx = Math.cos(angle) * speed;
+                this.vy = Math.sin(angle) * speed;
+                this.gravity = gravity;
+                this.hue = random(0, 360); 
+                this.brightness = random(50, 80);
+                this.stringColor = `hsl(${this.hue}, 100%, ${this.brightness}%)`;
+            }
+            update() {
+                let p = this.coordinates.pop();
+                if (!p) p = [0,0];
+                p[0] = this.x;
+                p[1] = this.y;
+                this.coordinates.unshift(p);
+
+                this.vy += this.gravity; 
+                this.x += this.vx;
+                this.y += this.vy;
+                
+                if (this.vy >= -0.5) {
+                    this.explode();
+                    return false;
+                }
+                return true;
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.moveTo(this.coordinates[this.coordinates.length - 1][0], this.coordinates[this.coordinates.length - 1][1]);
+                ctx.lineTo(this.x, this.y);
+                ctx.strokeStyle = this.stringColor;
+                ctx.stroke();
+            }
+            explode() {
+                const count = random(40, 70);
+                for (let i = 0; i < count; i++) {
+                    particles.push(new Particle(this.x, this.y, this.hue));
+                }
+            }
+        }
+
+        class Particle {
+            constructor(x, y, hue) {
+                this.x = x;
+                this.y = y;
+                this.coordinateCount = 5;
+                this.coordinates = new Array(this.coordinateCount);
+                for(let i=0; i<this.coordinateCount; i++) {
+                    this.coordinates[i] = [this.x, this.y];
+                }
+                
+                const angle = random(0, PI2);
+                const speed = random(1, 8); 
+                this.vx = Math.cos(angle) * speed;
+                this.vy = Math.sin(angle) * speed;
+                this.friction = 0.95; 
+                this.gravity = 0.08; 
+                this.hue = hue + random(-20, 20); 
+                this.brightness = random(50, 80);
+                this.alpha = 1;
+                this.decay = random(0.015, 0.03);
+            }
+            update() {
+                let p = this.coordinates.pop();
+                if (!p) p = [0,0];
+                p[0] = this.x;
+                p[1] = this.y;
+                this.coordinates.unshift(p);
+
+                this.vx *= this.friction;
+                this.vy *= this.friction;
+                this.vy += this.gravity;
+                this.x += this.vx;
+                this.y += this.vy;
+                this.alpha -= this.decay;
+
+                if (this.alpha <= this.decay) return false;
+                if (this.y > height + 50) return false; 
+                if (this.x < -50 || this.x > width + 50) return false; 
+
+                return true;
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.moveTo(this.coordinates[this.coordinates.length - 1][0], this.coordinates[this.coordinates.length - 1][1]);
+                ctx.lineTo(this.x, this.y);
+                ctx.strokeStyle = `hsla(${this.hue}, 100%, ${this.brightness}%, ${this.alpha})`;
+                ctx.stroke();
+            }
+        }
+
+        function loop() {
+            ctx.clearRect(0, 0, width, height);
+            
+            timerTick++;
+            if (timerTick >= timerTotal) {
+                fireworks.push(new Firework());
+                timerTick = 0;
+                timerTotal = random(20, 70); 
+            }
+            if (Math.random() < 0.005) {
+                 fireworks.push(new Firework());
+            }
+
+            let i = fireworks.length;
+            while(i--) {
+                fireworks[i].draw();
+                if (!fireworks[i].update()) {
+                    fireworks[i] = fireworks[fireworks.length - 1];
+                    fireworks.pop();
+                }
+            }
+
+            let j = particles.length;
+            while(j--) {
+                particles[j].draw();
+                if (!particles[j].update()) {
+                    particles[j] = particles[particles.length - 1];
+                    particles.pop();
+                }
+            }
+            
+            if (mouseMoved && cursorGlow) {
+                cursorGlow.style.transform = `translate3d(${mouseX}px, ${mouseY}px, 0)`;
+                mouseMoved = false;
+            }
+
+            animationId = requestAnimationFrame(loop);
+        }
+
+        function startAnimation() { if (!animationId) loop(); }
+        function stopAnimation() {
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+                animationId = null;
+            }
+        }
+        startAnimation();
+    </script>
+
+    <script>
+        const CURRENT_VERSION = "0.2.1_nutrient";
+        const isPlusMode = true;
+
+        function clearGameFrame() {
+            const iframe = document.getElementById("game-frame");
+            if(iframe) {
+                iframe.srcdoc = '';
+                iframe.src = ''; 
+                iframe.style.display = 'none';
+            }
+        }
+        window.onbeforeunload = clearGameFrame;
+
+        document.addEventListener("DOMContentLoaded", function() {
+            clearGameFrame();
+
+            const updateScreen = document.getElementById('update-screen');
+            const homeScreen = document.getElementById('home-screen');
+            const loginScreen = document.getElementById('login-screen');
+            const statusContent = document.getElementById('status-content');
+            const footer = document.getElementById("footer");
+            const loginFooter = document.getElementById("login-footer");
+
+            const appName = isPlusMode ? "Fireworks+" : "Fireworks";
+
+            const delayDuration = Math.floor(Math.random() * (6000 - 2000 + 1)) + 2000;
+            const delayPromise = new Promise(resolve => setTimeout(resolve, delayDuration));
+
+            const fetchPromise = fetch('https://raw.githubusercontent.com/purple-fireworks/data/refs/heads/main/version.txt?' + new Date().getTime(), { cache: 'no-cache' });
+
+            Promise.all([fetchPromise.catch(err => err), delayPromise])
+                .then(([response, _]) => {
+                    if (response instanceof Error) {
+                        throw response;
+                    }
+                    if (!response.ok) {
+                        throw new Error("Network response was not ok");
+                    }
+                    return response.text();
+                })
+                .then(text => {
+                    const allowedVersions = text.split(',').map(v => v.trim());
+                    
+                    if (allowedVersions.includes(CURRENT_VERSION)) {
+                        updateScreen.style.display = 'none';
+                        
+                        if (isPlusMode) {
+                            loginScreen.style.display = 'flex';
+                            loginFooter.textContent = CURRENT_VERSION;
+                            const loginTitle = document.getElementById('main-title-text-login');
+                            if(loginTitle) loginTitle.textContent = "Fireworks+";
+                        } else {
+                            showHomeScreen();
+                        }
+                    } else {
+                        showErrorState("Update Required", `<span>This version of ${appName} is no longer supported.</span><span>Please update to the latest version and try again.</span>`);
+                    }
+                })
+                .catch(error => {
+                    console.error("Version Check Error:", error);
+                    showErrorState("Connection Failed", "<span>We couldn't connect to the server.</span><span>Check your internet connection and try again.</span>");
+                });
+
+            function showHomeScreen() {
+                homeScreen.style.display = 'flex';
+                footer.textContent = CURRENT_VERSION;
+                loadNotifications();
+            }
+
+            function showErrorState(title, message) {
+                statusContent.innerHTML = `
+                    <div class="status-message" style="color: var(--error); text-shadow: 0 0 15px var(--error-glow); margin-bottom: 15px;">${title}</div>
+                    <div class="status-detail">${message}</div>
+                    <button onclick="location.reload()" style="max-width: 200px; margin-top: 25px;">Retry</button>
+                `;
+            }
+
+            function loadNotifications() {
+                fetch('https://raw.githubusercontent.com/purple-fireworks/data/refs/heads/main/notify.txt?' + new Date().getTime(), { cache: 'no-cache' })
+                .then(response => response.text())
+                .then(notificationText => {
+                    const notificationContainer = document.getElementById("notification-container");
+                    if (notificationText.trim()) {
+                        const notificationDiv = document.createElement("div");
+                        notificationDiv.classList.add("notify-container");
+                        
+                        const lines = notificationText.split('\n');
+                        const heading = lines[0];
+                        let contentRaw = lines.slice(1).join('\n');
+                        let contentFormatted = contentRaw
+                            .replace(/\\n/g, '\n') 
+                            .replace(/\n+/g, '<br>'); 
+                        
+                        const headingElement = document.createElement("div");
+                        headingElement.classList.add("notify-heading");
+                        headingElement.textContent = heading;
+                        notificationDiv.appendChild(headingElement);
+                        
+                        if (contentFormatted.trim()) {
+                            const contentElement = document.createElement("div");
+                            contentElement.classList.add("notify-content");
+                            contentElement.innerHTML = contentFormatted;
+                            notificationDiv.appendChild(contentElement);
+                        }
+                        notificationContainer.appendChild(notificationDiv);
+                    }
+                });
+            }
+
+            if (isPlusMode) {
+                document.title = "Fireworks+";
+                const homeTitle = document.getElementById('main-title-text-home');
+                if(homeTitle) homeTitle.textContent = "Fireworks+";
+                const updateTitle = document.getElementById('main-title-text');
+                if(updateTitle) updateTitle.textContent = "Fireworks+";
+                const plusOnlyElements = document.querySelectorAll('.plus-only');
+                plusOnlyElements.forEach(el => {
+                    el.style.display = 'inline-block'; 
+                });
+            }
+
+            window.attemptLogin = function() {
+                const userIn = document.getElementById('username-input').value.trim();
+                const passIn = document.getElementById('password-input').value.trim();
+                const btn = document.getElementById('login-btn');
+                const errorMsg = document.getElementById('login-error');
+
+                if(!userIn || !passIn) return;
+
+                btn.classList.add('disabled');
+                btn.textContent = "Checking...";
+                errorMsg.style.display = 'none';
+
+                fetch('https://raw.githubusercontent.com/purple-fireworks/data/refs/heads/main/login.txt?' + new Date().getTime(), { cache: 'no-cache' })
+                .then(response => {
+                    if (!response.ok) throw new Error("Login server error");
+                    return response.text();
+                })
+                .then(text => {
+                    const lines = text.split('\n');
+                    let authenticated = false;
+
+                    for (let line of lines) {
+                        const parts = line.trim().split(',');
+                        if (parts.length >= 2) {
+                            if (parts[0] === userIn && parts[1] === passIn) {
+                                authenticated = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (authenticated) {
+                        document.getElementById('login-screen').style.display = 'none';
+                        showHomeScreen();
+                    } else {
+                        btn.classList.remove('disabled');
+                        btn.textContent = "Login";
+                        errorMsg.style.display = 'block';
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    btn.classList.remove('disabled');
+                    btn.textContent = "Login";
+                    alert("Connection error checking credentials.");
+                });
+            };
+
+            window.showEaglercraftButtons = function() {
+                document.getElementById('button-container').style.display = 'none';
+                const eaglerContainer = document.getElementById('eaglercraft-button-container');
+                eaglerContainer.style.display = 'flex';
+            };
+
+            window.showMainMenu = function() {
+                document.getElementById('eaglercraft-button-container').style.display = 'none';
+                const mainContainer = document.getElementById('button-container');
+                mainContainer.style.display = 'flex';
+            };
+
+            const buttons = document.querySelectorAll('button'); 
+
+            function disableButtons() {
+                buttons.forEach(button => {
+                    button.classList.add('disabled');
+                    button.disabled = true;
+                });
+            }
+
+            function enableButtons() {
+                buttons.forEach(button => {
+                    button.classList.remove('disabled');
+                    button.disabled = false;
+                });
+            }
+
+            function openRawHtml(url) {
+                const iframe = document.getElementById("game-frame");
+                const progressOverlay = document.getElementById('progress-overlay');
+                stopAnimation();
+                disableButtons();
+                progressOverlay.style.display = 'flex';
+                fetch(url)
+                    .then(response => response.text())
+                    .then(html => {
+                        iframe.srcdoc = html;
+                        iframe.style.display = "block";
+                        iframe.onload = function() {
+                            progressOverlay.style.display = 'none';
+                            enableButtons();
+                            iframe.onload = null;
+                        };
+                    })
+                    .catch(error => {
+                        console.error('Error fetching raw HTML:', error);
+                        progressOverlay.style.display = 'none';
+                        enableButtons();
+                        startAnimation();
+                        alert('Could not load content. Please try again.');
+                    });
+            }
+            window.openRawHtml = openRawHtml;
+        });
+    </script>
+</body>
+</html>
